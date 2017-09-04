@@ -4,8 +4,8 @@ contract Splitter {
 	
 	mapping(address => uint) public balances;
 
-	event SplitPerformed(address sender, address receiver1, address receiver2, uint amountEachReceived, uint remainder);
-	event FundsWithdrawn(address withdrawer, uint amount);
+	event LogSplitPerformed(address sender, address receiver1, address receiver2, uint amountEachReceived, uint remainder);
+	event LogFundsWithdrawn(address withdrawer, uint amount);
 
 	function split(address receiver1, address receiver2) public payable returns (bool success) {
 		require(msg.value > 0);
@@ -22,7 +22,7 @@ contract Splitter {
 		balances[receiver2] += splitAmount;
 		balances[msg.sender] += remainder;
 
-		SplitPerformed(msg.sender, receiver1, receiver2, splitAmount, remainder);
+		LogSplitPerformed(msg.sender, receiver1, receiver2, splitAmount, remainder);
 		
 		return true;
 	}
@@ -34,7 +34,7 @@ contract Splitter {
 		balances[msg.sender] = 0;
 		msg.sender.transfer(amount);
 
-		FundsWithdrawn(msg.sender, amount);
+		LogFundsWithdrawn(msg.sender, amount);
 
 		return true;
 	}
