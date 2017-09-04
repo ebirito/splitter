@@ -12,19 +12,13 @@ contract('Splitter', function(accounts) {
     const accountsToCheck = [0, 1, 2, 3];
     accountsToCheck.forEach(function (accountNumber) {
       assert.isDefined(accounts[accountNumber], `"accounts[${accountNumber}] is undefined`);
-      try {
-          web3.eth.sendTransaction({
-              from: accounts[accountNumber],
-              to: accounts[accountNumber],
-              value: 0
-          });
-          return false;
-      } catch (err) {
+      web3.eth.signPromise(accounts[accountNumber], "someData")
+      .catch((error) => {
         assert.fail(`"accounts[${accountNumber}] is not unlocked`);
-      }
+      });
       web3.eth.getBalancePromise(accounts[accountNumber])
       .then((balance) => {
-        assert.isTrue(balance > web3.toWei('1', 'ether'), `"accounts[${accountNumber}] insufficient balance`)
+        assert.isTrue(balance.greaterThan(web3.toWei(1, 'ether')), `"accounts[${accountNumber}] insufficient balance`)
       });
     });
   });
@@ -113,7 +107,7 @@ contract('Splitter', function(accounts) {
         return web3.eth.getBalancePromise(splitterInstance.address);
       })
       .then((balanceContract) => {
-        assert.equal(balanceContract, 100);
+        assert.strictEqual(balanceContract.toString(10), "100");
       })
     });
     
@@ -154,7 +148,7 @@ contract('Splitter', function(accounts) {
         return web3.eth.getBalancePromise(splitterInstance.address);
       })
       .then((balanceContract) => {
-        assert.equal(balanceContract, 101);
+        assert.strictEqual(balanceContract.toString(10), "101");
       })
     }); 
   });
@@ -235,7 +229,7 @@ contract('Splitter', function(accounts) {
         return web3.eth.getBalancePromise(splitterInstance.address);
       })
       .then((balanceContract) => {
-        assert.equal(balanceContract, 51);
+        assert.strictEqual(balanceContract.toString(10), "51");
       })
     });
   });

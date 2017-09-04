@@ -4,8 +4,8 @@ contract Splitter {
 	
 	mapping(address => uint) public balances;
 
-	event LogSplitPerformed(address sender, address receiver1, address receiver2, uint amountEachReceived, uint remainder);
-	event LogFundsWithdrawn(address withdrawer, uint amount);
+	event LogSplitPerformed(address indexed sender, address indexed receiver1, address indexed receiver2, uint amountEachReceived, uint remainder);
+	event LogFundsWithdrawn(address indexed withdrawer, uint amount);
 
 	function split(address receiver1, address receiver2) public payable returns (bool success) {
 		require(msg.value > 0);
