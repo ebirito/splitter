@@ -1,6 +1,7 @@
+var Promise = require("bluebird");
+var join = Promise.join;
+Promise.promisifyAll(web3.eth, { suffix: "Promise" });
 let Splitter = artifacts.require("./Splitter.sol");
-
-require('bluebird').promisifyAll(web3.eth, { suffix: "Promise" });
 
 contract('Splitter', function(accounts) {
   let splitterInstance;
@@ -10,16 +11,24 @@ contract('Splitter', function(accounts) {
 
   before("check that prerequisites for tests are valid", function() {
     const accountsToCheck = [0, 1, 2, 3];
-    accountsToCheck.forEach(function (accountNumber) {
+    
+    Promise.map(accountsToCheck, function (accountNumber) {
       assert.isDefined(accounts[accountNumber], `"accounts[${accountNumber}] is undefined`);
-      web3.eth.signPromise(accounts[accountNumber], "someData")
-      .catch((error) => {
-        assert.fail(`"accounts[${accountNumber}] is not unlocked`);
-      });
-      web3.eth.getBalancePromise(accounts[accountNumber])
-      .then((balance) => {
-        assert.isTrue(balance.greaterThan(web3.toWei(1, 'ether')), `"accounts[${accountNumber}] insufficient balance`)
-      });
+      var signedData = web3.eth.signPromise(accounts[accountNumber], "someData")
+      var balance = web3.eth.getBalancePromise(accounts[accountNumber]);
+      return join(signedData, balance, function(signedData, balance) {
+        return {
+          signedData: signedData,
+          balance: balance,
+          accountNumber: accountNumber
+        }
+      })
+    })
+    .catch((error) => {
+      assert.fail("one of the accounts is is not unlocked");
+    })
+    .each((accountPromises) => {
+        assert.isTrue(accountPromises.balance.greaterThan(web3.toWei(1, 'ether')), `accounts[${accountPromises.accountNumber}] insufficient balance`);
     });
   });
 
